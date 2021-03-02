@@ -58,11 +58,13 @@ class TV(object):
                         self.current_state = State.ON
                     else:
                         self.tv.power_on()
+                        print('Turning TV on')
                 elif self.current_state == State.TRANSITIONING_OFF:
                     if tv_state == State.OFF:
                         self.current_state = State.OFF
                     else:
                         self.tv.standby()
+                        print('Turning TV off')
                 else:
                     self.current_state = tv_state
 
@@ -73,12 +75,12 @@ class TV(object):
         day_of_week = now.weekday()
         if day_of_week == 6:
             # Sunday, on at 8am off at 6pm
-            if now.hour >= 8 and now.hour < 18:
+            if now.hour >= 8 and now.hour < 14:
                 return State.ON
-        elif day_of_week >= 1 and day_of_week <= 3:
-            # Tues, Wed, Thu, 6pm to 9pm
-            if now.hour >= 18 and now.hour < 21:
-                return State.ON
+        #elif day_of_week >= 1 and day_of_week <= 3:
+        #    # Tues, Wed, Thu, 6pm to 9pm
+        #    if now.hour >= 18 and now.hour < 21:
+        #        return State.ON
         return State.OFF
 
     def stop(self):
