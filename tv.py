@@ -74,8 +74,8 @@ class TV(object):
         # dow starts with Monday
         day_of_week = now.weekday()
         if day_of_week == 6:
-            # Sunday, on at 8am off at 6pm
-            if now.hour >= 8 and now.hour < 14:
+            # Sunday, on at 7am off at 6pm
+            if now.hour >= 7 and now.hour < 14:
                 return State.ON
         #elif day_of_week >= 1 and day_of_week <= 3:
         #    # Tues, Wed, Thu, 6pm to 9pm

@@ -147,6 +147,7 @@ class SlideshowFrame(object):
         self.title2.setVisible(False)
         self.title3.setVisible(False)
         self.image.setVisible(False)
+        self.image.setPixmap(QPixmap())
 
     def showImage(self, file, md):
         self.metadata = md
