@@ -86,7 +86,7 @@ class MainWindow(QMainWindow):
         new_files = []
         for r, dirs, files in os.walk(os.path.abspath(self.root)):
             for name in files:
-                if os.path.splitext(name)[1].lower() in ('.jpg', '.png', '.jpeg'):
+                if os.path.splitext(name)[1].lower() in ('.jpg', '.jpeg'):
                     new_files.append(os.path.join(r, name))
 
         metadata = {}
