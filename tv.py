@@ -1,88 +1,72 @@
 import os, os.path
 import random, sys, time
 import cec
-import threading, subprocess
+import threading, subprocess, queue
 import datetime
 from enum import Enum
+import schedule
 
 class State(Enum):
     OFF = 0
     ON = 1
     TURNING_OFF = 2
     TURNING_ON = 3
+    UNKNOWN = 4
 
-class TV(object):
+class Command(Enum):
+    STATUS = 0
+    TURN_ON = 1
+    TURN_OFF = 2
+
+class TVPower(object):
     def __init__(self):
         cec.init()
-        # Force TV to turn on/off
-        self.scheduled_state = self.__should_be_on()
-        self.current_state = not self.scheduled_state
-
         self.tv = cec.Device(cec.CECDEVICE_TV)
-        cec.add_callback(self.__response_handler, cec.EVENT_COMMAND)
+
+    def power_on(self):
+        print('Turning TV on')
+        self.tv.power_on()
+
+    def power_off(self):
+        print('Turning TV off')
+        self.tv.standby()
+
+
+class TVSchedule(object):
+    def __init__(self):
+        self.tv = TVPower()
+
+        sunday_on = datetime.time(hour = 6, minute = 0)
+        sunday_off = datetime.time(hour = 18, minute = 0)
+        tuesday_on = datetime.time(hour = 18, minute = 30)
+        tuesday_off = datetime.time(hour = 21, minute = 30)
+
+        schedule.every().sunday.at(sunday_on.strftime('%H:%M')).do(self.tv.power_on)
+        schedule.every().sunday.at(sunday_off.strftime('%H:%M')).do(self.tv.power_off)
+        schedule.every().tuesday.at(tuesday_on.strftime('%H:%M')).do(self.tv.power_on)
+        schedule.every().tuesday.at(tuesday_off.strftime('%H:%M')).do(self.tv.power_off)
+
+        now = datetime.datetime.now()
+        if now.weekday() == 6 and now.time() >= sunday_on and now.time() < sunday_off:
+            self.tv.power_on()
+        elif now.weekday() == 1 and now.time() >= tuesday_on and now.time() < tuesday_off:
+            self.tv.power_on()
+        else:
+            self.tv.power_off()
 
         self.running = True
-        self.thr = threading.Thread(target = self.__check_tv)
+        self.thr = threading.Thread(target = self.__run_scheduler)
         self.thr.start()
 
-
-    def __check_tv(self):
+    def __run_scheduler(self):
         while self.running:
-            try:
-                self.tv.is_on()
-                time.sleep(1)
-            except:
-                pass
-
-    def __response_handler(self, event, *args):
-        if event == cec.EVENT_COMMAND:
-            args = args[0]
-            if args['opcode_set'] and args['opcode'] == 0x90:  # Report Power Status
-                should_be_on = self.__should_be_on()
-
-                if args['parameters'] == b'\x00':
-                    # TV ON
-                    tv_state = State.ON
-                else:
-                    # TV off or transitioning
-                    tv_state = State.OFF
-
-                # Only force a change if we have a schedule change
-                if self.scheduled_state != should_be_on:
-                    self.scheduled_state = should_be_on
-                    # current state is transitioning
-                    self.current_state = should_be_on + State.TRANSITIONING_OFF
-
-                if self.current_state == State.TRANSITIONING_ON:
-                    if tv_state == State.ON:
-                        self.current_state = State.ON
-                    else:
-                        self.tv.power_on()
-                        print('Turning TV on')
-                elif self.current_state == State.TRANSITIONING_OFF:
-                    if tv_state == State.OFF:
-                        self.current_state = State.OFF
-                    else:
-                        self.tv.standby()
-                        print('Turning TV off')
-                else:
-                    self.current_state = tv_state
-
-    def __should_be_on(self):
-        # This could be more convenient
-        now = datetime.datetime.now()
-        # dow starts with Monday
-        day_of_week = now.weekday()
-        if day_of_week == 6:
-            # Sunday, on at 7am off at 6pm
-            if now.hour >= 7 and now.hour < 14:
-                return State.ON
-        #elif day_of_week >= 1 and day_of_week <= 3:
-        #    # Tues, Wed, Thu, 6pm to 9pm
-        #    if now.hour >= 18 and now.hour < 21:
-        #        return State.ON
-        return State.OFF
+            schedule.run_pending()
+            time.sleep(1)
 
     def stop(self):
         self.running = False
 
+if __name__ == '__main__':
+    tv = TVPower()
+    tv.power_off()
+    

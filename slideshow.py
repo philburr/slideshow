@@ -7,7 +7,7 @@ from PyQt4.QtGui import QVBoxLayout, QWidget, QSizePolicy, QFrame, QBrush, QColo
 from PyQt4.QtCore import QTimer, QObject, QSize, Qt, QRectF
 
 from slideshow_window import MainWindow
-from tv import TV
+from tv import TVSchedule
 
 def slideshow():
 
@@ -66,7 +66,7 @@ SECONDS is the time between images.""" % sys.argv[0])
 
     win.showFullScreen()
 
-    tv = TV()
+    tv = TVSchedule()
 
     app.exec_()
 

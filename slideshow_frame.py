@@ -16,14 +16,17 @@ class SlideshowFrame(object):
         self.filename = filename
         self.metadata = metadata
 
+        self.line1 = ""
+        self.line2 = ""
+        self.line3 = ""
+
         if self.metadata:
-            self.line1 = self.metadata['Name']
-            self.line2 = "%s Mission" % (self.metadata['Mission'])
-            self.line3 = "%s" % (self.metadata['Time'])
-        else:
-            self.line1 = ""
-            self.line2 = ""
-            self.line3 = ""
+            if 'Name' in self.metadata:
+                self.line1 = self.metadata['Name']
+            if 'Mission' in self.metadata:
+                self.line2 = "%s Mission" % (self.metadata['Mission'])
+            if 'Time' in self.metadata:
+                self.line3 = "%s" % (self.metadata['Time'])
 
         self.image = QGraphicsPixmapItem()
         self.win.scene.addItem(self.image)
