@@ -25,6 +25,8 @@ class SlideshowFrame(object):
                 self.line1 = self.metadata['Name']
             if 'Mission' in self.metadata:
                 self.line2 = "%s Mission" % (self.metadata['Mission'])
+            if 'Temple' in self.metadata:
+                self.line2 = "%s Temple" % (self.metadata['Temple'])
             if 'Time' in self.metadata:
                 self.line3 = "%s" % (self.metadata['Time'])
 
